@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 1 – Menú Desplegable</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1e1e2e;
+            --border: #2a2a3a;
+            --accent: #7c3aed;
+            --accent2: #06b6d4;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --hover: #1a1a2e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ===== NAV ===== */
+        nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
+        }
+        nav ul { list-style: none; display: flex; align-items: stretch; }
+        nav > ul > li { position: relative; }
+        nav > ul > li > a, nav > ul > li > button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 1.2rem 1.4rem;
+            color: var(--muted);
+            text-decoration: none;
+            background: none;
+            border: none;
+            font: inherit;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: color 0.2s;
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+        }
+        nav > ul > li > a:hover, nav > ul > li > button:hover,
+        nav > ul > li.open > button { color: var(--text); }
+        nav > ul > li.active > a { color: var(--accent2); }
+        .chevron {
+            display: inline-block;
+            width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid currentColor;
+            transition: transform 0.25s;
+        }
+        nav > ul > li.open .chevron { transform: rotate(180deg); }
+
+        /* highlight bar */
+        nav > ul > li > a::after, nav > ul > li > button::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%; right: 50%;
+            height: 2px;
+            background: var(--accent2);
+            transition: left 0.2s, right 0.2s;
+        }
+        nav > ul > li > a:hover::after, nav > ul > li > button:hover::after,
+        nav > ul > li.open > button::after { left: 0; right: 0; }
+
+        /* Dropdown panel */
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 1px);
+            left: 0;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            box-shadow: 0 20px 40px rgba(0,0,0,.5);
+            animation: dropIn 0.2s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        li.open > .dropdown { display: block; }
+        .dropdown li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.7rem 1rem;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .dropdown li a:hover { background: var(--hover); color: var(--text); padding-left: 1.3rem; }
+        .dropdown li a .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* Mega dropdown */
+        .mega { min-width: 420px; padding: 1rem; }
+        .mega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+        .mega-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--accent2);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.4rem 0.5rem;
+            grid-column: 1 / -1;
+        }
+
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--text); }
+
+        /* Content area */
+        main {
+            max-width: 900px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+        .tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent2);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .subtitle { color: var(--muted); line-height: 1.7; margin-bottom: 3rem; }
+        .info-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <ul>
+        <li class="active"><a href="#">Inicio</a></li>
+
+        <li>
+            <button onclick="toggleMenu(this)">
+                Servicios <span class="chevron"></span>
+            </button>
+            <ul class="dropdown">
+                <li><a href="#"><span class="dot"></span>Diseño Web</a></li>
+                <li><a href="#"><span class="dot"></span>Desarrollo Backend</a></li>
+                <li><a href="#"><span class="dot"></span>Consultoría</a></li>
+                <li><a href="#"><span class="dot"></span>Soporte Técnico</a></li>
+            </ul>
+        </li>
+
+        <li>
+            <button onclick="toggleMenu(this)">
+                Portafolio <span class="chevron"></span>
+            </button>
+            <ul class="dropdown mega">
+                <div class="mega-title">Proyectos Destacados</div>
+                <div class="mega-grid">
+                    <li><a href="#"><span class="dot"></span>E-commerce</a></li>
+                    <li><a href="#"><span class="dot"></span>App Móvil</a></li>
+                    <li><a href="#"><span class="dot"></span>Dashboard</a></li>
+                    <li><a href="#"><span class="dot"></span>API REST</a></li>
+                    <li><a href="#"><span class="dot"></span>CMS</a></li>
+                    <li><a href="#"><span class="dot"></span>Landing Page</a></li>
+                </div>
+            </ul>
+        </li>
+
+        <li>
+            <button onclick="toggleMenu(this)">
+                Empresa <span class="chevron"></span>
+            </button>
+            <ul class="dropdown">
+                <li><a href="#"><span class="dot"></span>Sobre Nosotros</a></li>
+                <li><a href="#"><span class="dot"></span>Equipo</a></li>
+                <li><a href="#"><span class="dot"></span>Blog</a></li>
+                <li><a href="#"><span class="dot"></span>Carreras</a></li>
+            </ul>
+        </li>
+
+        <li><a href="#">Contacto</a></li>
+
+        <li style="margin-left:auto">
+            <a href="../index.php" class="back-link">← Volver al inicio</a>
+        </li>
+    </ul>
+</nav>
+
+<main>
+    <p class="tag">// Ejercicio 01</p>
+    <h1>Menú Desplegable</h1>
+    <p class="subtitle">
+        Implementación de un menú de navegación con submenús desplegables.
+        Haz clic en los elementos <strong style="color:var(--text)">Servicios</strong>,
+        <strong style="color:var(--text)">Portafolio</strong> y
+        <strong style="color:var(--text)">Empresa</strong> para ver los submenús.
+        El menú se cierra al hacer clic fuera o al abrir otro.
+    </p>
+    
+</main>
+
+<script>
+    function toggleMenu(btn) {
+        const li = btn.closest('li');
+        const isOpen = li.classList.contains('open');
+        // close all
+        document.querySelectorAll('nav li.open').forEach(el => el.classList.remove('open'));
+        // open if was closed
+        if (!isOpen) li.classList.add('open');
+    }
+
+    // Close on outside click
+    document.addEventListener('click', e => {
+        if (!e.target.closest('nav li')) {
+            document.querySelectorAll('nav li.open').forEach(el => el.classList.remove('open'));
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('nav li.open').forEach(el => el.classList.remove('open'));
+        }
+    });
+</script>
+</body>
+</html>
